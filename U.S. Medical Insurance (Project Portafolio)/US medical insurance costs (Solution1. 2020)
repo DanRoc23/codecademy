@@ -1,0 +1,202 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # U.S. Medical Insurance Costs
+
+# Sábado 17 de abril, 2020
+
+# 1. First, I imported random, Decimal, csv, Counter and operator.
+# 2. Second, I opened the csv document and stored the information in a new list
+
+# In[1]:
+
+
+import random
+from decimal import Decimal
+import csv
+from collections import Counter
+import operator
+
+
+insured = []
+with open("insurance.csv", newline="") as insurance_csv:
+    insurance_reader = csv.DictReader(insurance_csv)
+    for row in insurance_reader:
+        insured.append(row)
+
+
+# I stored the information in a class with the following methods:
+# 
+# 1. `__init__´ to declare the class attributes, in this case the attributes are equivalent to the "insured" list
+# 2. `__repr__´ to represent as str.
+# 
+# The next two functions are actually quirks of the programmer:
+# 
+# 3. Suppose we want to check later the record of a random insured, we will need his number his id (the number of index within the list of insured), the first function returns a random number within the index.
+# 4. The second function is in case we want to add a new record, it returns an extra number of index, that will be the id_number of the new record.
+# 5. To find out the average age of the patients in the dataset.
+# 6. To Analyze where a majority of the individuals are from.
+# 7. To analyze the most common sex.
+# 8. To analyze the most common smoker status.
+# 9. Look at the different costs between smokers vs. non-smokers.
+# 10. Figure out what the average age is for someone who has at least one child in this dataset.
+
+# In[2]:
+
+
+class Insured_people:
+    def __init__(self):
+        self.new_insured = insured
+    def __repr__(self):
+        return new_insured
+    def insurance_id_info (self):
+        new_insured = self.new_insured
+        insured_indexes = list(range(int(len(new_insured))))
+        random_number = random.choice(insured_indexes)
+        return random_number
+    def insurance_new_record(self):
+        return len(insured)
+    def get_average(self):
+        sum = 0
+        for row in self.new_insured:
+            age = float(row["age"])
+            sum += age
+        return int(sum /len(insured))
+    def majority_zone(self):
+        insured_zones = Counter(row["region"] for row in insured if row.get("region"))
+        for region, count in insured_zones.most_common():
+            return region
+    def majority_sex(self):
+        f_or_m = Counter(row["sex"] for row in insured if row.get("sex"))
+        for sex, count in f_or_m.most_common():
+            if sex == "male" or sex == 1:
+                return "Males"
+            else:
+                return "Females"
+    def majority_smoker(self):
+        smoker_or_nonsmoker = Counter(row["smoker"] for row in insured if row.get("smoker") == "yes" or row.get("smoker") == "no" or row.get("smoker") == 1 or row.get("smoker") == 0)
+        for status, count in smoker_or_nonsmoker.most_common():
+            if status == "no" or status == 0:
+                return "Non-Smokers"
+            else:
+                return "Smokers"
+    def costs_smoker_status(self, status):
+        smokers_costs = [row["charges"] for row in self.new_insured if row.get("smoker") == "yes" or row.get("smoker") == 1 ]
+        non_smokers_costs = [row["charges"] for row in self.new_insured if row.get("smoker") == "no" or row.get("smoker") == 0]
+        if status == 1:
+            return smokers_costs
+        elif status == 0:
+            return non_smokers_costs
+        if isinstance(status, str):
+            return "You must register the status using floats. 0 for Non-Smokers or 1 for Smokers."
+        else:
+            return "You must register 0 for Non-Smokers or 1 for Smokers"
+    def age_average_per_child(self):
+        ages_per_child = [row["age"] for row in self.new_insured if float(row["children"]) != 0]
+        sum = 0
+        for age in ages_per_child:
+            sum += int(age)
+        return int(sum/len(ages_per_child))
+        
+
+
+# I printed several tests of the methods
+
+# In[3]:
+
+
+insured_people = Insured_people()
+print(insured_people.new_insured[0])
+print(insured_people.new_insured[1])
+print(insured_people.get_average())
+print(insured_people.majority_zone())
+print(insured_people.majority_sex())
+print(insured_people.majority_smoker())
+print(insured_people.costs_smoker_status(0)[0])
+print(insured_people.costs_smoker_status(1)[0])
+print(insured_people.costs_smoker_status("h"))
+print(insured_people.costs_smoker_status(4))
+print(insured_people.age_average_per_child())
+
+
+# I create a subclass to acces the information of an individual and return it. (This also can be done with indexes, as the `print(insured_people.new_insured[1])´ does.
+
+# In[4]:
+
+
+class Insured_Person(Insured_people):
+    def __init__(self, id_number):
+        id_number = insured[id_number]
+        self.index = id_number
+        self.age = self.index["age"]
+        self.sex = self.index["sex"]
+        self.bmi = self.index["bmi"]
+        self.children = self.index ["children"]
+        self.smoker = self.index["smoker"]
+        self.region = self.index["region"]
+        self.charges = self.index ["charges"]
+    def insured_info(self):
+        return self.index
+
+
+# In[5]:
+
+
+maurice = Insured_Person(1)
+print(maurice.insured_info())
+print(maurice.charges)
+
+
+# I create a subclass to access to estimated the differences beetween the estimated cost and the real cost.
+
+# In[6]:
+
+
+class Estimated_Insurances_Costs(Insured_people):
+    def estimated_difference(self):
+        insured_updated = []
+        estimated_costs = []
+        real_vs_estimated = []
+        differences = []
+        for row in insured:
+            if row["sex"] == "male" and row["smoker"] == "no":
+                row["sex"] = 0
+                row["smoker"] = 0 
+            elif row["sex"] == "female" and row["smoker"] == "yes":
+                row["sex"] = 1
+                row["smoker"] = 1
+            elif row["sex"] == "male" and row["smoker"] == "yes":
+                row["sex"] = 0
+                row["smoker"] = 1
+            else:
+                row["sex"] = 1
+                row["smoker"] = 0
+            insured_info = {}
+            insured_info["age"] = row["age"]
+            insured_info["sex"] = row["sex"]
+            insured_info["bmi"] = row["bmi"]
+            insured_info["children"] = row["children"]
+            insured_info["smoker"] = row["smoker"]
+            insured_info["region"] = row["region"]
+            insured_info["charges"] = row["charges"]
+            insured_updated.append(insured_info["charges"])
+            estimated_cost = 250 * float(insured_info["age"]) - 128 * float(insured_info["sex"]) + 370 * float(insured_info["bmi"]) + 425 * float(insured_info["children"]) + 24000 * float(insured_info["smoker"]) - 12500
+            estimated_costs.append(estimated_cost)
+        for charge in range(len(estimated_costs)):
+            real_v_estimated= {"Real": insured_updated[charge], "Estimated": estimated_costs[charge]}
+            real_vs_estimated.append(real_v_estimated)
+        for charge in real_vs_estimated:
+            x = float(charge["Real"])
+            y = int(charge["Estimated"])
+            difference = int(Decimal(x) - Decimal(y))
+            data = {"Real": x, "Estimated": y, "Difference": difference}
+            differences.append(data)
+        return differences
+
+
+# In[7]:
+
+
+estimated = Estimated_Insurances_Costs ()
+print(estimated.estimated_difference())
+
